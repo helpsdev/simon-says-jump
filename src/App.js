@@ -1,10 +1,12 @@
 import './App.css';
-import { Stage, Sprite } from '@inlet/react-pixi'
+import { Stage, Sprite } from '@inlet/react-pixi';
+import Character from './Components/Character/Character';
 
 function App() {
   return (
     <div className="App">
       <Stage>
+        <Character />
         {getGroundSprites()}
       </Stage>
     </div>
@@ -16,12 +18,14 @@ function getGroundSprites(){
   const spriteWidth = 128;
   let placedSprite = 0;
   const groundSprites = [];
+  let counter = 0;
 
   while(placedSprite < canvasWidth){
     groundSprites.push(
-      <Sprite image="./PlatformerTiles/PNG/upperGround.png" x={placedSprite} y={470} />
+      <Sprite key={counter.toString()} image="./PlatformerTiles/PNG/upperGround.png" x={placedSprite} y={470}  />
     );
     placedSprite+= spriteWidth;
+    counter++;
   }
 
   return groundSprites;
