@@ -1,34 +1,17 @@
 import './App.css';
-import { Stage, Sprite } from '@inlet/react-pixi';
-import Character from './Components/Character/Character';
+import GameScene from "./Components/GameScene/GameScene";
+
 
 function App() {
   return (
     <div className="App">
-      <Stage>
-        <Character />
-        {getGroundSprites()}
-      </Stage>
+      
+      <GameScene />
+      
     </div>
   );
 }
 
-function getGroundSprites(){
-  const canvasWidth = 800;
-  const spriteWidth = 128;
-  let placedSprite = 0;
-  const groundSprites = [];
-  let counter = 0;
 
-  while(placedSprite < canvasWidth){
-    groundSprites.push(
-      <Sprite key={counter.toString()} image="./PlatformerTiles/PNG/upperGround.png" x={placedSprite} y={470}  />
-    );
-    placedSprite+= spriteWidth;
-    counter++;
-  }
-
-  return groundSprites;
-}
 
 export default App;
