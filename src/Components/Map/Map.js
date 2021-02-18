@@ -14,7 +14,7 @@ function getGroundSprites(){
 
     while(placedSprite < canvasWidth){
         groundSprites.push(
-        <Sprite key={counter.toString()} image="./PlatformerTiles/PNG/upperGround.png" x={placedSprite} y={470}  />
+            <Sprite key={counter.toString()} image="./PlatformerTiles/PNG/upperGround.png" x={placedSprite} y={470}  />
         );
         placedSprite+= spriteWidth;
         counter++;

@@ -1,7 +1,8 @@
 import './Character.css';
-import { Sprite, useTick, useApp } from '@inlet/react-pixi';
+import { Sprite, useTick } from '@inlet/react-pixi';
 import * as PIXI from "pixi.js";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { GameContext } from '../GameContext/GameContext';
 
 const fumikoTexture = getFumikoFordwards();
 const fumikoState = getFumikoInitialState();
@@ -14,7 +15,17 @@ left.release = () => fumikoState.xVelocity = 0;
 
 function Character () {
     const [xPosition, setXPosition] = useState(0);
-    useTick(() => setXPosition(xPosition + fumikoState.xVelocity));
+    const gameContext = useContext(GameContext);
+    
+    useTick(() => {
+      
+      if (xPosition + fumikoState.xVelocity > 750) {
+        gameContext.setCharacterHasReachedTheEnd(xPosition + fumikoState.xVelocity > 750);  
+        return;
+      }
+
+      setXPosition(xPosition + fumikoState.xVelocity < 0 ? 0 : xPosition + fumikoState.xVelocity);
+    });
 
     return <Sprite x={xPosition} y={365} texture={fumikoTexture} scale={3.5}  />;
 }
