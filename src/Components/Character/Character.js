@@ -1,8 +1,9 @@
 import './Character.css';
-import { Sprite, useTick } from '@inlet/react-pixi';
+import { Sprite, useTick, useApp } from '@inlet/react-pixi';
 import * as PIXI from "pixi.js";
 import { useState, useContext } from "react";
 import { GameContext } from '../GameContext/GameContext';
+import { MAP_WIDTH } from "../Defaults/Defaults";
 
 const fumikoTexture = getFumikoFordwards();
 const fumikoState = getFumikoInitialState();
@@ -15,16 +16,24 @@ left.release = () => fumikoState.xVelocity = 0;
 
 function Character () {
     const [xPosition, setXPosition] = useState(0);
-    const gameContext = useContext(GameContext);
-    
+    const {setCharacterHasReachedTheEnd, setMapX , mapX} = useContext(GameContext);
+    const {renderer} = useApp();
     useTick(() => {
       
-      if (xPosition + fumikoState.xVelocity > 750) {
-        gameContext.setCharacterHasReachedTheEnd(xPosition + fumikoState.xVelocity > 750);  
-        return;
+      const isXPositionGreaterThanMapWidth = xPosition + fumikoState.xVelocity > MAP_WIDTH;
+      if (isXPositionGreaterThanMapWidth) return setCharacterHasReachedTheEnd(isXPositionGreaterThanMapWidth);  
+
+      const hasFumikoReachedTheMapsBeginning = xPosition + fumikoState.xVelocity < 0;
+      const isFumikoAtTheCenter = xPosition >= renderer.width / 2;
+      
+
+      if (isFumikoAtTheCenter && mapX <= 0) {
+        setMapX(hasFumikoReachedTheMapsBeginning ? mapX : mapX - fumikoState.xVelocity);  
+      }else{
+        setXPosition(hasFumikoReachedTheMapsBeginning ? 0 : xPosition + fumikoState.xVelocity);
+        setMapX(0);
       }
 
-      setXPosition(xPosition + fumikoState.xVelocity < 0 ? 0 : xPosition + fumikoState.xVelocity);
     });
 
     return <Sprite x={xPosition} y={365} texture={fumikoTexture} scale={3.5}  />;
@@ -87,7 +96,7 @@ function keyboard(value) {
 
 function getFumikoFordwards(){
     const fumikoBaseTexture = new PIXI.BaseTexture("./PlatformerTiles/Fumiko.png");
-    const fumikoFrame = new PIXI.Rectangle(0,34,25,34);
+    const fumikoFrame = new PIXI.Rectangle(0,32,24,32);
   
   
     return new PIXI.Texture(fumikoBaseTexture, fumikoFrame);

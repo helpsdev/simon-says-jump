@@ -8,11 +8,12 @@ import { useState } from 'react';
 
 function App() {
   const [characterHasReachedTheEnd, setCharacterHasReachedTheEnd] = useState(false);
+  const [mapX, setMapX] = useState(0);
 
   return (
     <div className="App">
       <Stage>
-        <GameContext.Provider value={{setCharacterHasReachedTheEnd}}>
+        <GameContext.Provider value={{setCharacterHasReachedTheEnd, mapX,setMapX}}>
           {characterHasReachedTheEnd ? <GameOverScene /> : <GameScene />}
         </GameContext.Provider>
       </Stage>
