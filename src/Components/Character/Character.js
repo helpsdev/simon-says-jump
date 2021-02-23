@@ -13,9 +13,14 @@ right.release = () => fumikoState.xVelocity = 0;
 const left = keyboard("ArrowLeft");
 left.press = () => fumikoState.xVelocity = -5;
 left.release = () => fumikoState.xVelocity = 0;
+const space = keyboard(" ");
+space.press = () => fumikoState.yVelocity = -5;
+space.release = () => fumikoState.yVelocity = 0;
 
 function Character () {
     const [xPosition, setXPosition] = useState(0);
+    const [yPosition, setYPosition] = useState(365);
+    const [falling, setFalling] = useState(false);
     const {setCharacterHasReachedTheEnd, setMapX , mapX} = useContext(GameContext);
     const {renderer} = useApp();
     useTick(() => {
@@ -34,15 +39,28 @@ function Character () {
         setMapX(0);
       }
 
+      //Simulate jumping
+      if (falling) {
+        setYPosition(yPosition + 5 <= 365 ? yPosition + 5 : 365);
+        setFalling(yPosition === 365 ? false : true);
+      }else if(yPosition >= 270){
+        setYPosition(yPosition + fumikoState.yVelocity);
+        setFalling(yPosition === 270);
+      }
+      
+      
+
     });
 
-    return <Sprite x={xPosition} y={365} texture={fumikoTexture} scale={3.5}  />;
+    return <Sprite x={xPosition} y={yPosition} texture={fumikoTexture} scale={3.5}  />;
 }
 
 
 function getFumikoInitialState() {
     return{
-        xVelocity: 0
+        xVelocity: 0,
+        yVelocity: 0,
+        falling : false
     };
 }
 
