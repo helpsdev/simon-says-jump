@@ -1,65 +1,102 @@
 import './Character.css';
 import { Sprite, useTick, useApp } from '@inlet/react-pixi';
 import * as PIXI from "pixi.js";
-import { useState, useContext } from "react";
+import { useState, useContext, useReducer } from "react";
 import { GameContext } from '../GameContext/GameContext';
 import { MAP_WIDTH } from "../Defaults/Defaults";
 
 const fumikoTexture = getFumikoFordwards();
 const fumikoState = getFumikoInitialState();
 const right = keyboard("ArrowRight");
-right.press = () => fumikoState.xVelocity = 5;
-right.release = () => fumikoState.xVelocity = 0;
+
 const left = keyboard("ArrowLeft");
-left.press = () => fumikoState.xVelocity = -5;
-left.release = () => fumikoState.xVelocity = 0;
+
 const space = keyboard(" ");
 space.press = () => fumikoState.yVelocity = -5;
 space.release = () => fumikoState.yVelocity = 0;
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "fall":
+      return {...state, yVelocity: state.yVelocity + (9.81 * action.secondsElapsed)};
+    case "runFordwards":
+      return {...state, xVelocity: action.xVelocity};
+    case "updateX":
+      return {...state, x: action.x};
+    case "updateY":
+      return {...state, y: action.y};
+    default:
+      break;
+  }
+};
+const initalState = {
+  x: 0,
+  y: 0,
+  xVelocity: 0,
+  yVelocity: 0,
+  secondsElapsed : 0
+};
 function Character () {
-    const [xPosition, setXPosition] = useState(0);
-    const [yPosition, setYPosition] = useState(365);
-    const [falling, setFalling] = useState(false);
+    const [fumiko, dispatch] = useReducer(reducer, initalState);
+    const [frameCounter, setFrameCounter] = useState(0);
+    // const [falling, setFalling] = useState(false);
     const {setCharacterHasReachedTheEnd, setMapX , mapX} = useContext(GameContext);
     const {renderer} = useApp();
-    useTick(() => {
+    const gravity = 9.81;
+
+    
+    right.press = () => {dispatch({xVelocity: fumiko.xVelocity + 5, type: "runFordwards"}); console.log({fumiko,key:"pressed"});};
+    right.release = () => {dispatch({xVelocity: 0, type: "runFordwards"}); console.log({fumiko, key:"released"}); };
+    left.press = () => dispatch({xVelocity: fumiko.xVelocity - 5, type:"runFordwards"});
+    left.release = () => dispatch({xVelocity: 0, type: "runFordwards"});
+
+    useTick(delta => {
       
-      const isXPositionGreaterThanMapWidth = xPosition + fumikoState.xVelocity > MAP_WIDTH;
+      const isXPositionGreaterThanMapWidth = fumiko.x + fumiko.xVelocity > MAP_WIDTH;
       if (isXPositionGreaterThanMapWidth) return setCharacterHasReachedTheEnd(isXPositionGreaterThanMapWidth);  
 
-      const hasFumikoReachedTheMapsBeginning = xPosition + fumikoState.xVelocity < 0;
-      const isFumikoAtTheCenter = xPosition >= renderer.width / 2;
+      const hasFumikoReachedTheMapsBeginning = fumiko.x + fumiko.xVelocity < 0;
+      const isFumikoAtTheCenter = fumiko.x >= renderer.width / 2;
       
 
       if (isFumikoAtTheCenter && mapX <= 0) {
-        setMapX(hasFumikoReachedTheMapsBeginning ? mapX : mapX - fumikoState.xVelocity);  
+        setMapX(hasFumikoReachedTheMapsBeginning ? mapX : mapX - fumiko.xVelocity);  
       }else{
-        setXPosition(hasFumikoReachedTheMapsBeginning ? 0 : xPosition + fumikoState.xVelocity);
+        dispatch({x: hasFumikoReachedTheMapsBeginning ? 0 : fumiko.x + fumiko.xVelocity, type: "updateX"})
         setMapX(0);
       }
 
       //Simulate jumping
-      if (falling) {
-        setYPosition(yPosition + 5 <= 365 ? yPosition + 5 : 365);
-        setFalling(yPosition === 365 ? false : true);
-      }else if(yPosition >= 270){
-        setYPosition(yPosition + fumikoState.yVelocity);
-        setFalling(yPosition === 270);
+      // if (falling) {
+      //   setYPosition(yPosition + 5 <= 365 ? yPosition + 5 : 365);
+      //   setFalling(yPosition === 365 ? false : true);
+      // }else if(yPosition >= 270){
+      //   setYPosition(yPosition + fumikoState.yVelocity);
+      //   setFalling(yPosition === 270);
+      // }
+      
+      if (frameCounter <=60) {
+        setFrameCounter(frameCounter + 1);
+      }else{
+        dispatch({secondsElapsed: fumiko.secondsElapsed + 1, type:"fall"});
+        setFrameCounter(0);
       }
       
-      
-
+      if (fumiko.y < 365) {  
+        dispatch({y: fumiko.y + fumiko.yVelocity, type: "updateY"});
+      }else{
+        dispatch({y: 365, type: "updateY"});
+      }
     });
-
-    return <Sprite x={xPosition} y={yPosition} texture={fumikoTexture} scale={3.5}  />;
+    
+    return <Sprite x={fumiko.x} y={fumiko.y} texture={fumikoTexture} scale={3.5}  />;
 }
 
 
 function getFumikoInitialState() {
     return{
         xVelocity: 0,
-        yVelocity: 0,
+        yVelocity: 1,
         falling : false
     };
 }
