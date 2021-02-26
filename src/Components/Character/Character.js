@@ -6,25 +6,25 @@ import { GameContext } from '../GameContext/GameContext';
 import { MAP_WIDTH } from "../Defaults/Defaults";
 
 const fumikoTexture = getFumikoFordwards();
-const fumikoState = getFumikoInitialState();
 const right = keyboard("ArrowRight");
 
 const left = keyboard("ArrowLeft");
 
 const space = keyboard(" ");
-space.press = () => fumikoState.yVelocity = -5;
-space.release = () => fumikoState.yVelocity = 0;
+
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case "fall":
-      return {...state, yVelocity: state.yVelocity + (9.81 * action.secondsElapsed)};
+    case "fall":                                                                      
+      return {...state, airTime: action.airTime, yVelocity: state.yVelocity + (.81 * action.airTime) / 60};
     case "runFordwards":
       return {...state, xVelocity: action.xVelocity};
     case "updateX":
       return {...state, x: action.x};
     case "updateY":
       return {...state, y: action.y};
+    case "jump":
+      return {...state, jumpTime: action.jumpTime, y: state.y - (.81 * action.jumpTime)}
     default:
       break;
   }
@@ -34,71 +34,49 @@ const initalState = {
   y: 0,
   xVelocity: 0,
   yVelocity: 0,
-  secondsElapsed : 0
+  secondsElapsed : 0,
+  airTime:0
 };
 function Character () {
-    const [fumiko, dispatch] = useReducer(reducer, initalState);
-    const [frameCounter, setFrameCounter] = useState(0);
-    // const [falling, setFalling] = useState(false);
-    const {setCharacterHasReachedTheEnd, setMapX , mapX} = useContext(GameContext);
-    const {renderer} = useApp();
-    const gravity = 9.81;
+  const [fumiko, dispatch] = useReducer(reducer, initalState);
+  const [frameCounter, setFrameCounter] = useState(0);
+  const {setCharacterHasReachedTheEnd, setMapX , mapX} = useContext(GameContext);
+  const {renderer} = useApp();
+  const isFumikoOnTheGround = () => fumiko.y >= 365;
+  
+  right.press = () => {dispatch({xVelocity: fumiko.xVelocity + 5, type: "runFordwards"}); console.log({fumiko,key:"pressed"});};
+  right.release = () => {dispatch({xVelocity: 0, type: "runFordwards"}); console.log({fumiko, key:"released"}); };
+  left.press = () => dispatch({xVelocity: fumiko.xVelocity - 5, type:"runFordwards"});
+  left.release = () => dispatch({xVelocity: 0, type: "runFordwards"});
+  space.press = () => dispatch({jumpTime: 5, type:"jump", yVelocity: 0});
+  space.release = () => dispatch({airTime: isFumikoOnTheGround() ? 0 : fumiko.airTime + 1, type: "fall"});
 
+  useTick(delta => { 
+    setFrameCounter(frameCounter + 1);
     
-    right.press = () => {dispatch({xVelocity: fumiko.xVelocity + 5, type: "runFordwards"}); console.log({fumiko,key:"pressed"});};
-    right.release = () => {dispatch({xVelocity: 0, type: "runFordwards"}); console.log({fumiko, key:"released"}); };
-    left.press = () => dispatch({xVelocity: fumiko.xVelocity - 5, type:"runFordwards"});
-    left.release = () => dispatch({xVelocity: 0, type: "runFordwards"});
-
-    useTick(delta => {
-      
-      const isXPositionGreaterThanMapWidth = fumiko.x + fumiko.xVelocity > MAP_WIDTH;
-      if (isXPositionGreaterThanMapWidth) return setCharacterHasReachedTheEnd(isXPositionGreaterThanMapWidth);  
-
-      const hasFumikoReachedTheMapsBeginning = fumiko.x + fumiko.xVelocity < 0;
-      const isFumikoAtTheCenter = fumiko.x >= renderer.width / 2;
-      
-
-      if (isFumikoAtTheCenter && mapX <= 0) {
-        setMapX(hasFumikoReachedTheMapsBeginning ? mapX : mapX - fumiko.xVelocity);  
-      }else{
-        dispatch({x: hasFumikoReachedTheMapsBeginning ? 0 : fumiko.x + fumiko.xVelocity, type: "updateX"})
-        setMapX(0);
-      }
-
-      //Simulate jumping
-      // if (falling) {
-      //   setYPosition(yPosition + 5 <= 365 ? yPosition + 5 : 365);
-      //   setFalling(yPosition === 365 ? false : true);
-      // }else if(yPosition >= 270){
-      //   setYPosition(yPosition + fumikoState.yVelocity);
-      //   setFalling(yPosition === 270);
-      // }
-      
-      if (frameCounter <=60) {
-        setFrameCounter(frameCounter + 1);
-      }else{
-        dispatch({secondsElapsed: fumiko.secondsElapsed + 1, type:"fall"});
-        setFrameCounter(0);
-      }
-      
-      if (fumiko.y < 365) {  
-        dispatch({y: fumiko.y + fumiko.yVelocity, type: "updateY"});
-      }else{
-        dispatch({y: 365, type: "updateY"});
-      }
-    });
+    dispatch({airTime: isFumikoOnTheGround() ? 0 : fumiko.airTime + 1, type: "fall"});
+    dispatch({y: isFumikoOnTheGround() ? 365 : fumiko.yVelocity * fumiko.airTime, type: "updateY"});
     
-    return <Sprite x={fumiko.x} y={fumiko.y} texture={fumikoTexture} scale={3.5}  />;
-}
+    const isXPositionGreaterThanMapWidth = fumiko.x + fumiko.xVelocity > MAP_WIDTH;
+    if (isXPositionGreaterThanMapWidth) return setCharacterHasReachedTheEnd(isXPositionGreaterThanMapWidth);  
 
+    const hasFumikoReachedTheMapsBeginning = fumiko.x + fumiko.xVelocity < 0;
+    const isFumikoAtTheCenter = fumiko.x >= renderer.width / 2;
+    
 
-function getFumikoInitialState() {
-    return{
-        xVelocity: 0,
-        yVelocity: 1,
-        falling : false
-    };
+    if (isFumikoAtTheCenter && mapX <= 0) {
+      setMapX(hasFumikoReachedTheMapsBeginning ? mapX : mapX - fumiko.xVelocity);  
+    }else{
+      dispatch({x: hasFumikoReachedTheMapsBeginning ? 0 : fumiko.x + fumiko.xVelocity, type: "updateX"})
+      setMapX(0);
+    }
+
+    console.log(fumiko.yVelocity);
+  });
+  
+  
+
+  return <Sprite x={fumiko.x} y={fumiko.y} texture={fumikoTexture} scale={3.5}  />;
 }
 
 function keyboard(value) {
