@@ -4,6 +4,7 @@ import GameOverScene from "./Components/GameOverScene/GameOverScene";
 import { Stage } from '@inlet/react-pixi';
 import { GameContext } from './Components/GameContext/GameContext';
 import { useState } from 'react';
+import TestScene from './Components/TestScene/TestScene';
 
 
 function App() {
@@ -13,9 +14,10 @@ function App() {
   return (
     <div className="App">
       <Stage>
-        <GameContext.Provider value={{setCharacterHasReachedTheEnd, mapX,setMapX}}>
+        <TestScene />
+        {/* <GameContext.Provider value={{setCharacterHasReachedTheEnd, mapX,setMapX}}>
           {characterHasReachedTheEnd ? <GameOverScene /> : <GameScene />}
-        </GameContext.Provider>
+        </GameContext.Provider> */}
       </Stage>
     </div>
   );

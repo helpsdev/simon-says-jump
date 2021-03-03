@@ -16,7 +16,7 @@ const space = keyboard(" ");
 const reducer = (state, action) => {
   switch (action.type) {
     case "fall":                                                                      
-      return {...state, airTime: action.airTime, yVelocity: state.yVelocity + (.81 * action.airTime) / 60};
+      return {...state, airTime: action.airTime, yVelocity: state.yVelocity + (.2 * action.airTime) / 60};
     case "runFordwards":
       return {...state, xVelocity: action.xVelocity};
     case "updateX":
@@ -24,7 +24,7 @@ const reducer = (state, action) => {
     case "updateY":
       return {...state, y: action.y};
     case "jump":
-      return {...state, jumpTime: action.jumpTime, y: state.y - (.81 * action.jumpTime)}
+      return {...state, jumpTime: action.jumpTime, y: state.y - (.2 * action.jumpTime)}
     default:
       break;
   }
