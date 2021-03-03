@@ -1,5 +1,4 @@
 import { Sprite, useApp } from "@inlet/react-pixi";
-import * as PIXI from 'pixi.js';
 import { useState, useEffect } from "react";
 
 
@@ -8,15 +7,6 @@ function TestScene(){
     const fumikoSpreadSheet = "./PlatformerTiles/fumiko_01/fumiko_01.json";
     const [textures, setTextures] = useState(null);
     
-    // if (app.loader.resources[fumikoSpreadSheet]) {
-    //     setTest("cache");
-    // }else{
-    //     app.loader.add(fumikoSpreadSheet).load((l, resources) => {
-    //         // setTextures(resources[fumikoSpreadSheet].textures);
-    //         setTest("init");
-    //     });
-    // }
-
     useEffect(() => {
         // get from cache
         if (app.loader.resources[fumikoSpreadSheet]) {
@@ -30,8 +20,9 @@ function TestScene(){
         });
       }, [app.loader, fumikoSpreadSheet]);
     
-    // return <Sprite x={0} y={0} texture={app.loader.resources[fumikoSpreadSheet].textures["fumiko_010.png"]}></Sprite>
-    return textures && <Sprite x={0} y={0} texture={textures["fumiko_010.png"]}></Sprite>
+    
+    
+    return textures && <Sprite x={0} y={0} texture={textures["fumiko_010.png"]} scale={5}></Sprite>
     
 }
 
