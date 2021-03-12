@@ -1,36 +1,10 @@
-import { Sprite, useApp } from "@inlet/react-pixi";
+import { Sprite } from "@inlet/react-pixi";
 import { useState, useEffect } from "react";
+import { useTextures } from "./useTextures";
 
 function TestScene(){
-    const app = useApp();
-    const fumikoSpreadSheet = "./PlatformerTiles/fumiko_01/fumiko_01.json";
     const [textures, setTextures] = useState(null);
-    const [seconds, setSeconds] = useState(0);
-    const [fumikoTexture, setFumikoTexture] = useState(null);
-    const [index, setIndex] = useState(0);
-    
-    useEffect(() => {
-        // get from cache
-        if (app.loader.resources[fumikoSpreadSheet]) {
-          setTextures(app.loader.resources[fumikoSpreadSheet]);
-          return;
-        }
-    
-        // else load
-        app.loader.add(fumikoSpreadSheet).load((_, resource) => {
-          setTextures(resource[fumikoSpreadSheet].textures);
-        });
-      }, [app.loader, fumikoSpreadSheet]);
-    
-    useEffect(() => {
-      
-      const intervalId = setInterval(() => {
-        setSeconds(seconds => seconds + 1);
-      }, 100);
-
-      return () => clearInterval(intervalId);
-    }, [seconds]);
-
+    const [fumikoPos, setFumikoPos] = useState(null);
     const fumikos = [
       "fumiko_010.png",
       "fumiko_011.png",
@@ -38,21 +12,19 @@ function TestScene(){
       "fumiko_013.png",
       "fumiko_014.png",
       "fumiko_015.png"
-    ]
-    useEffect(() => {
-      if (textures) {
-        setIndex(index => index + 1 < fumikos.length ? index + 1 : 0);
-        setFumikoTexture(textures[fumikos[index]]);  
-      }  
-    }, [seconds]);
-    
-    const [fumikoPos, setFumikoPos] = useState({
-      x: 0,
-      y: 0,
-      xVel: 0,
-      yVel: 0
-    });
+    ];
 
+    useTextures(txt => {
+      setTextures(txt);
+      setFumikoPos({
+        x: 0,
+        y: 0,
+        xVel: 0,
+        yVel: 0,
+        current: txt[fumikos[0]]
+      });
+    });
+  
     const handleKeyDown = e => {
       switch (e.key) {
         case "ArrowRight":
@@ -78,7 +50,7 @@ function TestScene(){
       return () => document.removeEventListener("keyup", handleKeyDown);
     }, [fumikoPos]);
 
-    return fumikoTexture && <Sprite x={fumikoPos.x} y={0} texture={fumikoTexture} scale={5}></Sprite>
+    return fumikoPos && <Sprite x={fumikoPos.x} y={0} texture={fumikoPos.current} scale={5}></Sprite>
     
 }
 
