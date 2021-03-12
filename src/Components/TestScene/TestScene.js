@@ -21,14 +21,20 @@ function TestScene(){
         y: 0,
         xVel: 0,
         yVel: 0,
-        current: txt[fumikos[0]]
+        current: txt[fumikos[0]],
+        txtIndex: 0
       });
     });
   
     const handleKeyDown = e => {
       switch (e.key) {
         case "ArrowRight":
-          setFumikoPos({...fumikoPos, x: fumikoPos.x + 1});  
+          setFumikoPos({
+            ...fumikoPos, 
+            x: fumikoPos.x + 1, 
+            current: textures[fumikos[fumikoPos.txtIndex + 1]], 
+            txtIndex: fumikoPos.txtIndex + 1 >= fumikos.length ? 0 : fumikoPos.txtIndex + 1
+          });  
           break;
         case "ArrowLeft":
           setFumikoPos({...fumikoPos, x: fumikoPos.x - 1});  
