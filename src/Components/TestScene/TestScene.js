@@ -29,7 +29,7 @@ function TestScene(){
       }, 100);
 
       return () => clearInterval(intervalId);
-    }, []);
+    }, [seconds]);
 
     const fumikos = [
       "fumiko_010.png",
@@ -46,6 +46,13 @@ function TestScene(){
       }  
     }, [seconds]);
     
+    const handleKeyDown = e => console.log(e);
+
+    useEffect(() => {
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    });
+
     return fumikoTexture && <Sprite x={0} y={0} texture={fumikoTexture} scale={5}></Sprite>
     
 }

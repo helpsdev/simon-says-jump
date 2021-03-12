@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
 
 function Timer(){
-    const [elapsedTime, setElapsedTime] = useState(0);
+    const [seconds, setSeconds] = useState(0);
 
     useEffect(() => {
 
-        const intervalId = setInterval(() => setElapsedTime(elapsedTime => elapsedTime + 1), 1000);
-
+        const intervalId = setInterval(() => setSeconds(seconds => seconds + 1), 1000);
         return () => clearInterval(intervalId);
-    }, [])
+        
+    }, [seconds])
 
     
 
     return(
         <div>
-            <p>The elapsed time is {elapsedTime}</p>
+            <p>The elapsed time is {seconds}</p>
         </div>
         
     );
