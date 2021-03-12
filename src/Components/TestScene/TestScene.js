@@ -46,14 +46,39 @@ function TestScene(){
       }  
     }, [seconds]);
     
-    const handleKeyDown = e => console.log(e);
+    const [fumikoPos, setFumikoPos] = useState({
+      x: 0,
+      y: 0,
+      xVel: 0,
+      yVel: 0
+    });
+
+    const handleKeyDown = e => {
+      switch (e.key) {
+        case "ArrowRight":
+          setFumikoPos({...fumikoPos, x: fumikoPos.x + 1});  
+          break;
+        case "ArrowLeft":
+          setFumikoPos({...fumikoPos, x: fumikoPos.x - 1});  
+          break;
+        default:
+          break;
+      }
+    };
 
     useEffect(() => {
       document.addEventListener("keydown", handleKeyDown);
       return () => document.removeEventListener("keydown", handleKeyDown);
-    });
+    }, [fumikoPos]);
 
-    return fumikoTexture && <Sprite x={0} y={0} texture={fumikoTexture} scale={5}></Sprite>
+    const handleKeyUp = e => console.log(`${e.key} released`);
+
+    useEffect(() => {
+      document.addEventListener("keyup", handleKeyUp);
+      return () => document.removeEventListener("keyup", handleKeyDown);
+    }, [fumikoPos]);
+
+    return fumikoTexture && <Sprite x={fumikoPos.x} y={0} texture={fumikoTexture} scale={5}></Sprite>
     
 }
 
